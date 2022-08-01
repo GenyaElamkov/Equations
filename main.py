@@ -9,11 +9,11 @@ from tqdm import tqdm
 
 
 def generate_bracket(text) -> str:
-    """Генератор скобок"""
+    """Генератор скобок."""
     arr = text.split()
-
     start = randrange(0, len(arr) - 1, 2)
     end = randrange(start, len(arr) - 1, 2)
+
     if start == end and start == 0:
         end = randrange(start + 2, len(arr), 2)
     elif start == end and end == len(arr) - 1:
@@ -31,14 +31,19 @@ def generate_bracket(text) -> str:
 def generate_equate(size, factor, summa) -> str:
     """Возвращает сгенерированная уравнение."""
     max_size = summa  # Максимальный размер множителя на "х"
-    sign = ('+', '-', '*',)
+    sign = ('+', '-', '*', '/')
     summa = randint(1, summa)
 
     while True:
         # Генерируем уравнения.
         line = ''
         for _ in range(size):
-            equate = f'{randint(1, factor)}*x {choice(sign)} '
+            if size == 1:
+                line = f'{randint(1, max_size)} {choice(sign)} {randint(1, factor)}*x {choice(sign)} ' \
+                       f'{randint(1, max_size)} '
+                break
+            else:
+                equate = f'{randint(1, factor)}*x {choice(sign[:-1])} '
             line += equate
 
         line = line[:-2].rstrip()
@@ -49,9 +54,12 @@ def generate_equate(size, factor, summa) -> str:
         # Проверка на равенство уравнения.
         for x in range(1, max_size):
             # x - используется в eval() для расчета.
-            if int(eval(line)) == summa:
-                res = f'{line} = {summa};x = {x}'
-                return res
+            try:
+                if int(eval(line)) == summa:
+                    res = f'{line} = {summa};x = {x}'
+                    return res
+            except ZeroDivisionError:
+                break
 
 
 def progress_bar(counter):
@@ -60,7 +68,7 @@ def progress_bar(counter):
 
 
 def removing_multiplier(text) -> str:
-    """Удалят знак * с формулы для печати"""
+    """Удалят знак * с формулы для печати."""
     text = text.split()
     for i in range(len(text)):
         if len(text[i]) > 1:
@@ -68,17 +76,24 @@ def removing_multiplier(text) -> str:
     return ' '.join(text)
 
 
+def replace_chars(text) -> str:
+    """Меняет символ в уравнении на привычный нам вид."""
+    return text.replace('/', ':')
+
+
 def count_equate(number_equations, size, factor, summa, ) -> list:
     """Возвращает кол-во уравнений."""
     arr = []
     for i in range(1, number_equations + 1):
         text = generate_equate(size, factor, summa)
+        text = replace_chars(text)
         arr.append(removing_multiplier(text).split(';'))
         progress_bar(i)
     return arr
 
 
 def print_equate(arr):
+    """Выводим в txt"""
     with open('equation.txt', 'w', encoding='utf-8') as f:
         f.writelines('Уравнения:\n')
         for i in range(len(arr)):
@@ -86,10 +101,14 @@ def print_equate(arr):
 
         f.writelines('\nОтветы:\n')
         for i in range(len(arr)):
-            f.writelines(f'{i + 1}) {arr[i][1]} ')
+            f.writelines(f'{i + 1}) {arr[i][1]}\n')
 
 
 def main():
+    print('-' * 50)
+    print('[Help:] Если ввести кол-во аргументов 1 - то добавится "деление"')
+    print('-' * 50)
+
     size = int(input('[1] Введите кол-во аргументов: '))  # Размер ур-я аргументов.
     factor = int(input('[3] Введите множитель (10, 100, 1000): '))  # factor*X = summa.
     summa = int(input('[2] Введите max сумму равенства: '))  # Равенство ур-я = 100.
