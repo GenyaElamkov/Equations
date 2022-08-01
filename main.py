@@ -1,6 +1,7 @@
 from random import randint, choice, randrange
-from tqdm import tqdm
 from time import sleep
+
+from tqdm import tqdm
 
 """
 Генератор линейных уравнений
@@ -58,27 +59,34 @@ def progress_bar(counter):
         sleep(0.1)
 
 
+def removing_multiplier(text) -> str:
+    """Удалят знак * с формулы для печати"""
+    text = text.split()
+    for i in range(len(text)):
+        if len(text[i]) > 1:
+            text[i] = text[i].replace('*', '')
+    return ' '.join(text)
+
+
 def count_equate(number_equations, size, factor, summa, ) -> list:
     """Возвращает кол-во уравнений."""
     arr = []
     for i in range(1, number_equations + 1):
-        arr.append(generate_equate(size, factor, summa).split(';'))
+        text = generate_equate(size, factor, summa)
+        arr.append(removing_multiplier(text).split(';'))
         progress_bar(i)
     return arr
 
 
 def print_equate(arr):
     with open('equation.txt', 'w', encoding='utf-8') as f:
+        f.writelines('Уравнения:\n')
         for i in range(len(arr)):
             f.writelines(f'{i + 1}) {arr[i][0]}\n')
 
         f.writelines('\nОтветы:\n')
         for i in range(len(arr)):
             f.writelines(f'{i + 1}) {arr[i][1]} ')
-
-
-def test_generate_equate():
-    print(generate_equate(size=5, factor=3, summa=100))
 
 
 def main():
@@ -93,4 +101,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # test_generate_equate()
