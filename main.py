@@ -1,120 +1,40 @@
-from random import randint, choice, randrange
-from time import sleep
-
-from tqdm import tqdm
+from equations import generate_equate
+from equation_formated import format_chars
+from progress import progress_bar
+from history import print_txt
 
 """
 Генератор линейных уравнений
 """
 
 
-def generate_bracket(text) -> str:
-    """Генератор скобок."""
-    arr = text.split()
-    start = randrange(0, len(arr) - 1, 2)
-    end = randrange(start, len(arr) - 1, 2)
-
-    if start == end and start == 0:
-        end = randrange(start + 2, len(arr), 2)
-    elif start == end and end == len(arr) - 1:
-        start = randrange(0, end - 1, 2)
-    elif start == end and start >= 1:
-        start = randrange(0, start + 1, 2)
-        end = randrange(start + 2, len(arr), 2)
-
-    arr[start] = '(' + arr[start]
-    arr[end] = arr[end] + ')'
-
-    return ' '.join(arr)
-
-
-def generate_equate(size, factor, summa) -> str:
-    """Возвращает сгенерированная уравнение."""
-    max_size = summa  # Максимальный размер множителя на "х"
-    sign = ('+', '-', '*', '/')
-    summa = randint(1, summa)
-
-    while True:
-        # Генерируем уравнения.
-        line = ''
-        for _ in range(size):
-            if size == 1:
-                line = f'{randint(1, max_size)} {choice(sign)} {randint(1, factor)}*x {choice(sign)} ' \
-                       f'{randint(1, max_size)} '
-                break
-            else:
-                equate = f'{randint(1, factor)}*x {choice(sign[:-1])} '
-            line += equate
-
-        line = line[:-2].rstrip()
-
-        # Генератор скобок.
-        line = generate_bracket(line)
-
-        # Проверка на равенство уравнения.
-        for x in range(1, max_size):
-            # x - используется в eval() для расчета.
-            try:
-                if int(eval(line)) == summa:
-                    res = f'{line} = {summa};x = {x}'
-                    return res
-            except ZeroDivisionError:
-                break
-
-
-def progress_bar(counter):
-    for _ in tqdm(range(counter), ncols=80, ascii=True, desc='Total'):
-        sleep(0.1)
-
-
-def removing_multiplier(text) -> str:
-    """Удалят знак * с формулы для печати."""
-    text = text.split()
-    for i in range(len(text)):
-        if len(text[i]) > 1:
-            text[i] = text[i].replace('*', '')
-    return ' '.join(text)
-
-
-def replace_chars(text) -> str:
-    """Меняет символ в уравнении на привычный нам вид."""
-    return text.replace('/', ':')
-
-
-def count_equate(number_equations, size, factor, summa, ) -> list:
+def count_equate(number_equations: int, size: int, factor: int, summa: int) -> list:
     """Возвращает кол-во уравнений."""
     arr = []
     for i in range(1, number_equations + 1):
         text = generate_equate(size, factor, summa)
-        text = replace_chars(text)
-        arr.append(removing_multiplier(text).split(';'))
+        format_text = format_chars(text).split(';')
+        arr.append(format_text)
         progress_bar(i)
     return arr
-
-
-def print_equate(arr):
-    """Выводим в txt"""
-    with open('equation.txt', 'w', encoding='utf-8') as f:
-        f.writelines('Уравнения:\n')
-        for i in range(len(arr)):
-            f.writelines(f'{i + 1}) {arr[i][0]}\n')
-
-        f.writelines('\nОтветы:\n')
-        for i in range(len(arr)):
-            f.writelines(f'{i + 1}) {arr[i][1]}\n')
 
 
 def main():
     print('-' * 50)
     print('[Help:] Если ввести кол-во аргументов 1 - то добавится "деление"')
     print('-' * 50)
+    try:
+        size = int(input('[1] Введите кол-во аргументов: '))  # Размер ур-я аргументов.
+        factor = int(input('[3] Введите множитель (10, 100, 1000): '))  # factor*X = summa.
+        summa = int(input('[2] Введите max сумму равенства: '))  # Равенство ур-я = 100.
+        number_equations = int(input('[4] Введите кол-во уравнений: '))  # Кол-во ур-й.
+    except ValueError:
+        print('Введите целые числа.')
+        exit(1)
 
-    size = int(input('[1] Введите кол-во аргументов: '))  # Размер ур-я аргументов.
-    factor = int(input('[3] Введите множитель (10, 100, 1000): '))  # factor*X = summa.
-    summa = int(input('[2] Введите max сумму равенства: '))  # Равенство ур-я = 100.
-    number_equations = int(input('[4] Введите кол-во уравнений: '))  # Кол-во ур-й.
     arr = count_equate(number_equations, size, factor, summa)
-    print_equate(arr)
+    print_txt(arr)
+
     input('[!] Ваш файл создан, находится рядом с программой')
 
 
