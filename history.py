@@ -3,7 +3,7 @@
 """
 
 
-def print_txt(array: list) -> None:
+def save_txt(array: list) -> None:
     """Выводим в txt"""
     with open('equation.txt', 'w', encoding='utf-8') as f:
         f.writelines('Уравнения:\n')
@@ -22,4 +22,4 @@ if __name__ == '__main__':
            ['(82 - 4x) * 2 = 76', 'x = 11'],
            ['23 + (3x - 91) = 73', 'x = 47']]
 
-    print_txt(arr)
+    save_txt(arr)

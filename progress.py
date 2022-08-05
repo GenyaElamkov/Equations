@@ -1,3 +1,7 @@
+"""
+Progress bar for command line
+"""
+
 from time import sleep
 
 from tqdm import tqdm
